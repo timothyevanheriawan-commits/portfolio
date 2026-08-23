@@ -31,6 +31,7 @@ function RevealWord({
 
 function ShapeField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const readoutRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -49,6 +50,22 @@ function ShapeField() {
       h = 0,
       raf: number;
 
+    // Live pointer tracking — feeds the coordinate readout and an on-canvas
+    // crosshair, echoing the static "cross" / "coord" markers below but tied
+    // to the actual cursor instead of fixed grid cells.
+    let pointer: { x: number; y: number } | null = null;
+
+    function onPointerMove(e: PointerEvent) {
+      const rect = canvas!.getBoundingClientRect();
+      pointer = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+    function onPointerLeave() {
+      pointer = null;
+    }
+
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerleave", onPointerLeave);
+
     function resize() {
       const dpr = Math.min(devicePixelRatio, 2);
       w = canvas!.offsetWidth;
@@ -61,7 +78,7 @@ function ShapeField() {
     function draw(ts: number) {
       raf = requestAnimationFrame(draw);
       c.clearRect(0, 0, w, h);
-  const COLS = 12;
+      const COLS = 12;
 
       const colWidth = w / COLS;
       const rows = Math.ceil(h / colWidth);
@@ -131,6 +148,31 @@ function ShapeField() {
           );
         }
       });
+
+      // 3. Live pointer crosshair — same visual language as the static
+      // markers above, but it follows the cursor and reports its position.
+      if (pointer) {
+        c.globalAlpha = 0.5;
+        c.strokeStyle = MAROON;
+        c.lineWidth = 0.75;
+        c.beginPath();
+        c.moveTo(pointer.x - 6, pointer.y);
+        c.lineTo(pointer.x + 6, pointer.y);
+        c.moveTo(pointer.x, pointer.y - 6);
+        c.lineTo(pointer.x, pointer.y + 6);
+        c.stroke();
+
+        c.globalAlpha = 0.35;
+        c.beginPath();
+        c.arc(pointer.x, pointer.y, 10, 0, Math.PI * 2);
+        c.stroke();
+
+        if (readoutRef.current) {
+          readoutRef.current.textContent = `X:${Math.round(pointer.x).toString().padStart(3, "0")} Y:${Math.round(pointer.y).toString().padStart(3, "0")}`;
+        }
+      } else if (readoutRef.current) {
+        readoutRef.current.textContent = "X:--- Y:---";
+      }
     }
 
     resize();
@@ -141,15 +183,27 @@ function ShapeField() {
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      canvas!.removeEventListener("pointermove", onPointerMove);
+      canvas!.removeEventListener("pointerleave", onPointerLeave);
     };
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ pointerEvents: "none" }}
-    />
+    <div className="absolute inset-0 w-full h-full">
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full"
+        style={{ pointerEvents: "auto" }}
+      />
+      {/* Coordinate readout — updated imperatively from the draw loop to avoid
+          a re-render on every pointermove */}
+      <span
+        ref={readoutRef}
+        className="absolute bottom-3 right-3 font-mono text-[8px] tracking-[0.15em] text-[var(--color-text-primary)]/25 tabular-nums pointer-events-none select-none"
+      >
+        X:--- Y:---
+      </span>
+    </div>
   );
 }
 const LINKS = [
