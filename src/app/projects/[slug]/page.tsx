@@ -1,4 +1,4 @@
-// src/app/projects/[slug]/page.tsx
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Container } from "@/components/layout/container";
@@ -14,6 +14,31 @@ interface Props {
 
 export async function generateStaticParams() {
   return getAllProjects().map((p) => ({ slug: p.slug }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const project = getProject(slug);
+  if (!project) return {};
+
+  const ogImage = project.screenshots?.[0]?.src;
+
+  return {
+    title: project.title,
+    description: project.description,
+    openGraph: {
+      title: `${project.title} — Timothy Evan`,
+      description: project.description,
+      type: "article",
+      images: ogImage ? [{ url: ogImage, alt: project.title }] : undefined,
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title: `${project.title} — Timothy Evan`,
+      description: project.description,
+      images: ogImage ? [ogImage] : undefined,
+    },
+  };
 }
 
 export default async function ProjectPage({ params }: Props) {
