@@ -14,7 +14,7 @@ export const siteConfig = {
   email:    'timothy.evan.heriawan@gmail.com',
   github:   'https://github.com/timothyevanheriawan-commits',
   linkedin: 'https://linkedin.com/in/timothy-evan-heriawan/',
-  source:   'https://github.com/timothyevanheriawan-commits/portofolio',
+  source:   'https://github.com/timothyevanheriawan-commits/portfolio',
 
   githubHandle:   'timothyevanheriawan-commits',
   linkedinHandle: 'timothy-evan-heriawan',
