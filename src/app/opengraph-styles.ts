@@ -9,7 +9,7 @@ export const opengraphStyles = {
     flexDirection: "column" as const,
     alignItems: "flex-start",
     justifyContent: "flex-end",
-    background: "F7F7F5",
+    background: "#F7F7F5",
     padding: "80px",
   },
   scannerLine: {
@@ -18,7 +18,7 @@ export const opengraphStyles = {
     left: "80px",
     width: "1px",
     height: "100%",
-    background: "var(--color-border)",
+    background: "#E8E8E6",
   },
   logoContainer: {
     display: "flex",
@@ -31,7 +31,7 @@ export const opengraphStyles = {
   title: {
     fontSize: "84px",
     fontWeight: 700,
-    color: "var(--color-text-primary)",
+    color: "#1A1A1A",
     letterSpacing: "-0.04em",
     lineHeight: 1,
     marginBottom: "20px",
@@ -39,7 +39,7 @@ export const opengraphStyles = {
   },
   subtitle: {
     fontSize: "24px",
-    color: "var(--color-text-faint)",
+    color: "#9F9F9F",
     letterSpacing: "0.2em",
     textTransform: "uppercase" as const,
     fontFamily: "monospace",
@@ -54,13 +54,13 @@ export const opengraphStyles = {
   },
   versionText: {
     fontSize: "12px",
-    color: "var(--color-text-primary)",
+    color: "#1A1A1A",
     letterSpacing: "0.3em",
   },
   versionLine: {
     width: "40px",
     height: "2px",
-    background: "var(--color-accent)",
+    background: "#7A1E1E",
     marginTop: "8px",
   },
 };
