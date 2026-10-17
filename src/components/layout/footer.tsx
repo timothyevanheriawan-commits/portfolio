@@ -1,108 +1,113 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useReducedMotion } from "framer-motion";
 import { Container } from "./container";
 import { useMounted } from "@/hooks/use-mounted";
 import { siteConfig } from "@/lib/site-config";
 
-// Session uptime — counts seconds since this page instance mounted.
-// A small nod to the "system dossier" framing: this isn't a real server
-// uptime, just an honest label for "how long you've been on this page."
-function useSessionUptime() {
-  const [seconds, setSeconds] = useState(0);
+const label =
+  "font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-secondary)]";
 
-  useEffect(() => {
-    const start = performance.now();
-    const id = setInterval(() => {
-      setSeconds(Math.floor((performance.now() - start) / 1000));
-    }, 1000);
-    return () => clearInterval(id);
-  }, []);
+// Same hover treatment as the old footer: maroon line draws in from the left
+const link =
+  "relative w-fit text-[14px] text-[var(--color-text-body)] transition-colors duration-200 hover:text-[var(--color-text-primary)] focus-visible:text-[var(--color-text-primary)] focus-visible:outline-none after:content-[''] after:absolute after:left-0 after:-bottom-1 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[var(--color-accent)] after:transition-transform after:duration-300 hover:after:scale-x-100 focus-visible:after:scale-x-100";
 
-  const m = Math.floor(seconds / 60)
-    .toString()
-    .padStart(2, "0");
-  const s = (seconds % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
+function External({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={link}>
+      {children}
+      <span
+        aria-hidden
+        className="ml-1.5 text-[11px] text-[var(--color-text-muted)]"
+      >
+        ↗
+      </span>
+      <span className="sr-only"> (opens in a new tab)</span>
+    </a>
+  );
 }
 
 export function Footer() {
   const mounted = useMounted();
-  const uptime = useSessionUptime();
+  const reduce = useReducedMotion();
+  const toTop = () =>
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
 
   return (
-    <footer className="relative py-10 md:py-16 border-t border-[var(--color-border)] group/footer">
+    <footer className="relative border-t border-[var(--color-border)] pt-12 md:pt-16">
+      {/* Maroon tick on the top rule, kept from the original footer */}
       <span
         aria-hidden
-        className="absolute top-[-1px] left-0 w-10 h-px bg-[var(--color-accent)]"
+        className="absolute left-0 top-[-1px] h-px w-10 bg-[var(--color-accent)]"
       />
+
       <Container>
-        {/* Changed to flex-col on mobile, flex-row on desktop */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-y-10 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-text-faint)]">
-          {/* Top/Left Block: Legal & Identity */}
-          <div className="flex items-center gap-3 group/name">
-            <span className="text-[var(--color-text-primary)] font-medium tabular-nums">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12">
+          <div className="col-span-2 md:col-span-6 md:pr-12">
+            <p className="font-display text-[length:clamp(28px,4vw,44px)] font-bold uppercase leading-[0.95] tracking-[-0.04em] text-[var(--color-text-primary)]">
+              {siteConfig.name}
+            </p>
+            <p className="mt-4 max-w-[36ch] text-[14px] leading-[1.65] text-[var(--color-text-body)]">
+              Frontend development and data analysis. Based in Surabaya,
+              Indonesia.
+            </p>
+          </div>
+
+          <nav
+            aria-labelledby="footer-pages"
+            className="flex flex-col gap-3 md:col-span-3"
+          >
+            <p id="footer-pages" className={`${label} mb-1`}>
+              Pages
+            </p>
+            <Link href="/projects" className={link}>
+              Work
+            </Link>
+            <Link href="/about" className={link}>
+              About
+            </Link>
+          </nav>
+
+          <nav
+            aria-labelledby="footer-elsewhere"
+            className="flex flex-col gap-3 md:col-span-3"
+          >
+            <p id="footer-elsewhere" className={`${label} mb-1`}>
+              Elsewhere
+            </p>
+            <a href={`mailto:${siteConfig.email}`} className={link}>
+              Email
+            </a>
+            <External href={siteConfig.github}>GitHub</External>
+            <External href={siteConfig.linkedin}>LinkedIn</External>
+            <External href={siteConfig.source}>Source</External>
+          </nav>
+        </div>
+
+        <div className="mt-12 flex items-center justify-between border-t border-[var(--color-border)] py-5 md:mt-16">
+          <p className={label}>
+            <span className="tabular-nums text-[var(--color-text-primary)]">
               © {mounted ? new Date().getFullYear() : "2026"}
             </span>
-
-            <span className="text-[var(--color-border)]" aria-hidden="true">
+            <span aria-hidden className="mx-3 text-[var(--color-border-dark)]">
               |
             </span>
-
-            {/* Link removed, but keeping the color transition on footer hover */}
-            <span className="transition-colors duration-300 group-hover/footer:text-[var(--color-text-primary)] text-[var(--color-text-faint)]">
-              {siteConfig.name}
-            </span>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex gap-8">
-            {[
-              { label: "Work", href: "/projects" },
-              { label: "About", href: "/about" },
-              { label: "Source", href: siteConfig.source },
-            ].map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="relative hover:text-[var(--color-text-primary)] transition-colors after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-full after:h-px after:bg-[var(--color-accent)] after:scale-x-0 after:origin-left after:transition-transform after:duration-300 hover:after:scale-x-100"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-
-          {/* Bottom/Right Block: System Info */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:gap-x-6">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-1.5 w-1.5 shrink-0">
-                <span
-                  className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent)] opacity-40"
-                  style={{ animationDuration: "1.8s" }}
-                />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]" />
-              </span>
-              <span className="text-[var(--color-text-primary)]">
-                Open to Opportunities
-              </span>
-            </div>
-
-            <span className="text-[var(--color-border)]">/</span>
-
-            <span className="inline-block border border-[var(--color-border)] px-1.5 py-0.5 -rotate-2 text-[var(--color-text-primary)]">
-              V.2026
-            </span>
-
-            <span className="text-[var(--color-border)]">/</span>
-
-            <span className="whitespace-nowrap tabular-nums">
-              Session {mounted ? uptime : "00:00"}
-            </span>
-
-            <span className="text-[var(--color-border)]">/</span>
-
-            <span className="whitespace-nowrap">Next.js - Tailwind v4</span>
-          </div>
+            {siteConfig.name}
+          </p>
+          <button
+            type="button"
+            onClick={toTop}
+            className={`${label} transition-colors duration-200 hover:text-[var(--color-accent)] focus-visible:text-[var(--color-accent)] focus-visible:outline-none`}
+          >
+            Back to top ↑
+          </button>
         </div>
       </Container>
     </footer>
