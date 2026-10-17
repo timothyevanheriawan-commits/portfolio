@@ -143,7 +143,7 @@ export function Hero() {
         {/* ── Body left, CTA + status right ── */}
         <Fade
           delay={1.0}
-          className="flex flex-col gap-6 py-8 md:flex-row md:items-end md:justify-between md:py-10"
+          className="flex flex-col gap-8 pt-8 pb-12 pr-4 md:flex-row md:items-end md:justify-between md:gap-12 md:pr-8 md:pt-10 md:pb-16"
         >
           <p className="text-[14px] md:text-[15px] text-[var(--color-text-body)] leading-[1.75] max-w-[44ch] tracking-tight">
             I focus on frontend development and data visualization, creating
@@ -154,7 +154,8 @@ export function Hero() {
             and communicate clearly.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <div className="flex flex-col items-start gap-5 lg:flex-row lg:items-center">
+            {" "}
             <Link
               href="/projects"
               className="group inline-flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-[var(--color-bg-header)] bg-[var(--color-text-primary)] px-5 py-2.5 hover:bg-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:bg-[var(--color-accent)]"
@@ -164,7 +165,6 @@ export function Hero() {
                 →
               </span>
             </Link>
-
             <div className="flex items-center gap-3">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-accent)] opacity-20" />
