@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll } from "framer-motion";
 import { Container } from "./container";
 import { MarkLogo } from "../ui/logo";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,10 @@ const navItems = [
 ];
 
 const EASE_EXPO = [0.16, 1, 0.3, 1] as const;
+
+// Active on the page itself and on nested routes (e.g. /projects/some-slug)
+const isActivePath = (pathname: string, href: string) =>
+  pathname === href || pathname.startsWith(href + "/");
 
 // ── Live Clock ────────────────────────────────────────────────────────────────
 function LiveClock() {
@@ -44,7 +48,7 @@ function LiveClock() {
       {/* Reserve layout space before mount to prevent layout shift */}
       <span
         className={cn(
-          "text-[10px] font-mono tabular-nums tracking-widest transition-colors duration-300",
+          "text-[11px] font-mono tabular-nums tracking-widest transition-colors duration-300",
           mounted && time
             ? "text-[var(--color-text-primary)]"
             : "text-transparent",
@@ -52,7 +56,7 @@ function LiveClock() {
       >
         {time ?? "00:00:00"}
       </span>
-      <span className="text-[7px] font-mono uppercase tracking-[0.3em] text-[var(--color-text-ghost)]">
+      <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-[var(--color-text-tertiary)]">
         WIB / UTC+7
       </span>
     </div>
@@ -60,26 +64,15 @@ function LiveClock() {
 }
 
 // ── Scroll Progress Bar ───────────────────────────────────────────────────────
+// useScroll drives the transform directly, so scrolling never re-renders React.
 function ScrollProgress() {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(docHeight > 0 ? scrollTop / docHeight : 0);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const { scrollYProgress } = useScroll();
 
   return (
     <div className="absolute bottom-0 left-0 right-0 h-px bg-[var(--color-border)] overflow-hidden pointer-events-none">
       <motion.div
         className="h-full bg-[var(--color-accent)] origin-left"
-        style={{ scaleX: progress }}
-        transition={{ duration: 0 }}
+        style={{ scaleX: scrollYProgress }}
       />
     </div>
   );
@@ -118,9 +111,9 @@ function MobileMenu({
             transition={{ duration: 0.5, ease: EASE_EXPO }}
           >
             <Container>
-              <nav className="flex flex-col py-6">
+              <nav aria-label="Mobile" className="flex flex-col py-6">
                 {navItems.map((item, i) => {
-                  const isActive = pathname === item.href;
+                  const isActive = isActivePath(pathname, item.href);
                   return (
                     <motion.div
                       key={item.href}
@@ -135,24 +128,23 @@ function MobileMenu({
                       <NextLink
                         href={item.href}
                         onClick={onClose}
+                        aria-current={isActive ? "page" : undefined}
                         className="group flex items-center justify-between py-4 border-b border-[var(--color-border)] first:border-t focus-visible:outline-none focus-visible:bg-[var(--color-accent)]/5"
                       >
-                        <div className="flex items-center gap-4">
-                          <span className="text-[9px] font-mono text-[var(--color-accent)] tabular-nums">
-                            0{i + 1}
-                          </span>
-                          <span
-                            className={cn(
-                              "text-[15px] font-mono uppercase tracking-[0.1em]",
-                              isActive
-                                ? "text-[var(--color-text-primary)]"
-                                : "text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors duration-300",
-                            )}
-                          >
-                            {item.label}
-                          </span>
-                        </div>
-                        <span className="text-[var(--color-text-ghost)] group-hover:text-[var(--color-accent)] group-hover:translate-x-1 transition-all duration-300">
+                        <span
+                          className={cn(
+                            "text-[15px] font-mono uppercase tracking-[0.1em]",
+                            isActive
+                              ? "text-[var(--color-text-primary)]"
+                              : "text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors duration-300",
+                          )}
+                        >
+                          {item.label}
+                        </span>
+                        <span
+                          aria-hidden
+                          className="text-[var(--color-text-muted)] group-hover:text-[var(--color-accent)] group-hover:translate-x-1 transition-all duration-300"
+                        >
                           →
                         </span>
                       </NextLink>
@@ -160,9 +152,8 @@ function MobileMenu({
                   );
                 })}
 
-                {/* Contact */}
-                <motion.a
-                  href="mailto:timothy.evan.heriawan@gmail.com"
+                {/* Contact: jumps to the contact section (email, copy, form) */}
+                <motion.div
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{
@@ -170,20 +161,28 @@ function MobileMenu({
                     delay: 0.1 + navItems.length * 0.06,
                     ease: EASE_EXPO,
                   }}
-                  className="group flex items-center justify-between py-4 mt-2 focus-visible:outline-none"
                 >
-                  <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-[var(--color-text-primary)] bg-transparent">
-                    Get in touch
-                  </span>
-                  <span className="text-[var(--color-text-ghost)] group-hover:text-[var(--color-accent)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all duration-300">
-                    ↗
-                  </span>
-                </motion.a>
+                  <NextLink
+                    href="/#contact"
+                    onClick={onClose}
+                    className="group flex items-center justify-between py-4 mt-2 focus-visible:outline-none"
+                  >
+                    <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[var(--color-text-primary)]">
+                      Get in touch
+                    </span>
+                    <span
+                      aria-hidden
+                      className="text-[var(--color-text-muted)] group-hover:text-[var(--color-accent)] group-hover:translate-y-0.5 transition-all duration-300"
+                    >
+                      ↓
+                    </span>
+                  </NextLink>
+                </motion.div>
 
                 {/* Footer meta */}
                 <div className="flex items-center justify-between mt-8 pt-4 border-t border-[var(--color-border)]">
                   <LiveClock />
-                  <span className="text-[8px] font-mono uppercase tracking-[0.25em] text-[var(--color-text-ghost)]">
+                  <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-[var(--color-text-tertiary)]">
                     Surabaya, ID
                   </span>
                 </div>
@@ -216,12 +215,20 @@ export function Header() {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
-    }
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
+  }, [mobileMenuOpen]);
+
+  // Escape closes the mobile menu
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [mobileMenuOpen]);
 
   return (
@@ -235,9 +242,12 @@ export function Header() {
         )}
       >
         <Container>
-          <nav className="relative flex items-center justify-between h-12 md:h-14">
+          <nav
+            aria-label="Main"
+            className="relative flex items-center justify-between h-12 md:h-14"
+          >
             {/* ── Logo ── */}
-            <div className="shrink-0 relative z-50 flex items-center gap-4">
+            <div className="shrink-0 relative z-50 flex items-center">
               <NextLink
                 href="/"
                 aria-label="Home"
@@ -248,13 +258,9 @@ export function Header() {
                   className="text-[var(--color-text-primary)] transition-colors duration-300 group-hover:text-[var(--color-accent)]"
                 />
               </NextLink>
-              <span className="hidden sm:block h-3 w-px bg-[var(--color-border)]" />
-              <span className="hidden sm:block text-[9px] font-mono uppercase tracking-[0.3em] text-[var(--color-text-ghost)]">
-                Portfolio
-              </span>
             </div>
 
-            {/* ── Clock — absolute center ── */}
+            {/* ── Clock: absolute center ── */}
             <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex-col items-center">
               <LiveClock />
             </div>
@@ -262,25 +268,21 @@ export function Header() {
             {/* ── Desktop Nav ── */}
             <div className="hidden md:flex items-center h-full">
               <div className="flex items-center h-full border-l border-[var(--color-border)]">
-                {navItems.map((item, i) => {
-                  const isActive = pathname === item.href;
+                {navItems.map((item) => {
+                  const isActive = isActivePath(pathname, item.href);
                   return (
                     <NextLink
                       key={item.href}
                       href={item.href}
+                      aria-current={isActive ? "page" : undefined}
                       className="group relative flex items-center justify-center h-full px-6 border-r border-[var(--color-border)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[var(--color-accent)] overflow-hidden"
                     >
-                      {/* Index marker — fades in on hover */}
-                      <span className="absolute top-2 left-2 text-[6px] font-mono text-[var(--color-accent)] opacity-0 group-hover:opacity-60 transition-opacity duration-300">
-                        0{i + 1}
-                      </span>
-
                       {/* Hover fill */}
                       <span className="absolute inset-0 bg-[var(--color-accent)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                       <span
                         className={cn(
-                          "text-[10px] font-mono uppercase tracking-[0.25em] transition-colors duration-300 relative z-10",
+                          "text-[11px] font-mono uppercase tracking-[0.22em] transition-colors duration-300 relative z-10",
                           isActive
                             ? "text-[var(--color-text-primary)]"
                             : "text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)]",
@@ -307,25 +309,28 @@ export function Header() {
                 })}
               </div>
 
-              {/* Contact CTA — external action, uses ↗ */}
-              <a
+              {/* Contact CTA: jumps to the contact section on the home page */}
+              <NextLink
                 href="mailto:timothy.evan.heriawan@gmail.com"
                 className="group relative ml-6 px-5 h-8 flex items-center bg-[var(--color-text-primary)] hover:bg-[var(--color-accent)] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-header)]"
               >
-                <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-[var(--color-bg-header)] transition-colors duration-300">
+                <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-[var(--color-bg-header)]">
                   Contact
                 </span>
-                <span className="ml-2.5 text-[9px] font-mono text-[var(--color-bg-header)]/60 transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 inline-block">
-                  ↗
+                <span
+                  aria-hidden
+                  className="ml-2.5 text-[10px] font-mono text-[var(--color-bg-header)]/60 transition-transform duration-300 group-hover:translate-y-0.5 inline-block"
+                >
+                  ↓
                 </span>
-              </a>
+              </NextLink>
             </div>
 
             {/* ── Mobile Toggle ── */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden relative z-[60] w-10 h-10 -mr-2 flex items-center justify-center active:scale-90 transition-transform focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--color-accent)]"
-              aria-label="Toggle Menu"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
             >
               <div className="w-[18px] h-[10px] flex flex-col justify-between items-end">
@@ -356,7 +361,7 @@ export function Header() {
           </nav>
         </Container>
 
-        {/* Scroll progress — the only bottom-edge indicator now; the old shadow was redundant with this */}
+        {/* Scroll progress: the single scroll indicator in the header */}
         <ScrollProgress />
       </header>
 

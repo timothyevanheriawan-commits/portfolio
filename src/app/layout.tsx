@@ -99,8 +99,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Atmosphere layer - grain + scroll line, fixed, non-interactive */}
         <NoiseTexture />
-        <ScrollLine />
-
         <IntroLoader />
         <Cursor />
         <Header />
