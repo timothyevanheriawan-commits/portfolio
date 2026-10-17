@@ -116,20 +116,20 @@ export async function POST(req: NextRequest) {
       ].join("\n"),
       // Optional: HTML version for nicer inbox display
       html: `
-                <div style="font-family: 'Courier New', monospace; max-width: 600px; padding: 32px; background: var(--color-bg-header); color: var(--color-text-primary);">
-                    <div style="border-left: 3px solid var(--color-accent); padding-left: 16px; margin-bottom: 24px;">
-                        <p style="font-size: 11px; color: var(--color-accent); letter-spacing: 0.3em; text-transform: uppercase; margin: 0 0 4px;">
+                <div style="font-family: 'Courier New', monospace; max-width: 600px; padding: 32px; background: #F7F7F5; color: #1A1A1A;">
+                    <div style="border-left: 3px solid #7A1E1E; padding-left: 16px; margin-bottom: 24px;">
+                        <p style="font-size: 11px; color: #7A1E1E; letter-spacing: 0.3em; text-transform: uppercase; margin: 0 0 4px;">
                             Portfolio Contact
                         </p>
                         <p style="font-size: 18px; font-weight: bold; margin: 0;">${safeName}</p>
-                        <p style="font-size: 13px; color: var(--color-text-secondary); margin: 4px 0 0;">${safeEmail}</p>
+                        <p style="font-size: 13px; color: #666666; margin: 4px 0 0;">${safeEmail}</p>
                     </div>
-                    <div style="border-top: 1px solid var(--color-border); padding-top: 24px;">
-                        <p style="font-size: 9px; color: var(--color-text-faint); letter-spacing: 0.3em; text-transform: uppercase; margin: 0 0 12px;">Message</p>
-                        <p style="font-size: 14px; color: var(--color-text-body); line-height: 1.7; white-space: pre-wrap; margin: 0;">${safeMessage}</p>
+                    <div style="border-top: 1px solid #E8E8E6; padding-top: 24px;">
+                        <p style="font-size: 9px; color: #9F9F9F; letter-spacing: 0.3em; text-transform: uppercase; margin: 0 0 12px;">Message</p>
+                        <p style="font-size: 14px; color: #4A4A4A; line-height: 1.7; white-space: pre-wrap; margin: 0;">${safeMessage}</p>
                     </div>
-                    <div style="border-top: 1px solid var(--color-border); padding-top: 16px; margin-top: 32px;">
-                        <p style="font-size: 10px; color: var(--color-text-ghost); margin: 0;">timothy-evan.vercel.app</p>
+                    <div style="border-top: 1px solid #E8E8E6; padding-top: 16px; margin-top: 32px;">
+                        <p style="font-size: 10px; color: #BFBFBF; margin: 0;">timothy-evan.vercel.app</p>
                     </div>
                 </div>
             `,
